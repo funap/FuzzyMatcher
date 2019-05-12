@@ -31,13 +31,13 @@
 class FuzzyMatcher
 {
 public:
-	FuzzyMatcher() = delete;
-	FuzzyMatcher(std::wstring_view pattern);
-	~FuzzyMatcher();
-	int ScoreMatch(std::wstring_view target, std::vector<size_t> *positions = nullptr);
+    FuzzyMatcher() = delete;
+    FuzzyMatcher(std::wstring_view pattern);
+    ~FuzzyMatcher();
+    int ScoreMatch(std::wstring_view target, std::vector<size_t> *positions = nullptr);
 private:
-	virtual int CalculateScore(wchar_t patternChar, const std::wstring_view& target, size_t targetIndex, int matchesSequenceLength);
-	std::wstring_view pattern_;
+    int CalculateScore(wchar_t patternChar, const std::wstring_view& target, size_t targetIndex, int matchesSequenceLength);
+    std::wstring_view pattern_;
 };
 
 #endif  // FUZZY_MATCHER_H_
