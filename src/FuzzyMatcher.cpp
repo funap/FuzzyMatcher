@@ -24,7 +24,8 @@
 
 #include "FuzzyMatcher.h"
 
-#include <locale>
+#include <cwctype>
+#include <memory>
 #include <algorithm>
 
 FuzzyMatcher::FuzzyMatcher(std::wstring_view pattern)
@@ -129,8 +130,8 @@ int FuzzyMatcher::CalculateScore(wchar_t patternChar, const std::wstring_view &t
     constexpr int CAMEL_CASE_BONUS          = 10;
     constexpr int SEPARATOR_BONUS           = 10;
 
-    const wchar_t patternLowerChar = std::tolower(patternChar, std::locale::classic());
-    const wchar_t targetLowerChar = std::tolower(target[targetIndex], std::locale::classic());
+    const wchar_t patternLowerChar = std::towlower(patternChar);
+    const wchar_t targetLowerChar = std::towlower(target[targetIndex]);
     if (patternLowerChar != targetLowerChar) {
         return score; // no match
     }
@@ -157,8 +158,8 @@ int FuzzyMatcher::CalculateScore(wchar_t patternChar, const std::wstring_view &t
             score += START_OF_EXTENSION_BONUS;
             break;
         default:
-            if (std::islower(target[targetIndex - 1], std::locale::classic())) {
-                if (std::isupper(target[targetIndex], std::locale::classic())) {
+            if (std::iswlower(target[targetIndex - 1])) {
+                if (std::iswupper(target[targetIndex])) {
                     score += CAMEL_CASE_BONUS;
                 }
             }
