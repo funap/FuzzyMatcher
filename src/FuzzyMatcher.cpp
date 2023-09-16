@@ -1,18 +1,18 @@
 ﻿/*
   The MIT License (MIT)
-  
+
   Copyright (c) 2019 funap
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-  
+
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -50,7 +50,7 @@ int FuzzyMatcher::ScoreMatch(std::wstring_view target, std::vector<size_t>* posi
     }
 
     auto scoreMatrix = std::make_unique<int[]>(pattern_.length() * target.length());
-    auto matcheMatrix = std::make_unique<int[]>(pattern_.length() * target.length());
+    auto matchMatrix = std::make_unique<int[]>(pattern_.length() * target.length());
 
     for (size_t patternIndex = 0; patternIndex < pattern_.length(); ++patternIndex) {
         const bool patternIsFirstIndex          = (0 == patternIndex);
@@ -65,7 +65,7 @@ int FuzzyMatcher::ScoreMatch(std::wstring_view target, std::vector<size_t>* posi
 
             const int leftScore                 = targetIsFirstIndex ? 0 : scoreMatrix[leftIndex];
             const int diagScore                 = (patternIsFirstIndex || targetIsFirstIndex) ? 0 : scoreMatrix[diagIndex];
-            const int matchesSequenceLength     = (patternIsFirstIndex || targetIsFirstIndex) ? 0 : matcheMatrix[diagIndex];
+            const int matchesSequenceLength     = (patternIsFirstIndex || targetIsFirstIndex) ? 0 : matchMatrix[diagIndex];
 
             int score;
             if (!diagScore && !patternIsFirstIndex) {
@@ -76,11 +76,11 @@ int FuzzyMatcher::ScoreMatch(std::wstring_view target, std::vector<size_t>* posi
             }
 
             if (score && (leftScore <= diagScore + score)) {
-                matcheMatrix[currentIndex] = matchesSequenceLength + 1;
+                matchMatrix[currentIndex] = matchesSequenceLength + 1;
                 scoreMatrix[currentIndex] = diagScore + score;
             }
             else {
-                matcheMatrix[currentIndex] = 0;
+                matchMatrix[currentIndex] = 0;
                 scoreMatrix[currentIndex] = leftScore;
             }
         }
@@ -93,10 +93,10 @@ int FuzzyMatcher::ScoreMatch(std::wstring_view target, std::vector<size_t>* posi
         size_t targetIndex = target.length() - 1;
         while ((0 <= patternIndex) && (0 <= targetIndex)) {
             const size_t currentIndex = patternIndex * target.length() + targetIndex;
-            const int match = matcheMatrix[currentIndex];
+            const int match = matchMatrix[currentIndex];
             if (0 == match) {
                 if (0 < targetIndex) {
-                    --targetIndex;    // go left
+                    --targetIndex;
                 }
                 else {
                     break;
@@ -104,10 +104,9 @@ int FuzzyMatcher::ScoreMatch(std::wstring_view target, std::vector<size_t>* posi
             }
             else {
                 positions->emplace_back(targetIndex);
-
                 if ((0 < patternIndex) && (0 < targetIndex)) {
                     --patternIndex;
-                    --targetIndex;    // go up and left
+                    --targetIndex;
                 }
                 else {
                     break;
@@ -126,12 +125,13 @@ int FuzzyMatcher::CalculateScore(wchar_t patternChar, const std::wstring_view &t
     int score = 0;
 
     constexpr int CHARACTER_MATCH_BONUS     = 1;
-    constexpr int SAME_CASE_BONUS           = 3;
-    constexpr int FIRST_LETTER_BONUS        = 13;
+    constexpr int SAME_CASE_BONUS           = 1;
+    constexpr int FIRST_LETTER_BONUS        = 8;
     constexpr int CONSECUTIVE_MATCH_BONUS   = 5;
     constexpr int START_OF_EXTENSION_BONUS  = 3;
-    constexpr int CAMEL_CASE_BONUS          = 10;
-    constexpr int SEPARATOR_BONUS           = 10;
+    constexpr int CAMEL_CASE_BONUS          = 4;
+    constexpr int SEPARATOR_BONUS           = 4;
+    constexpr int DIRECTORY_SEPARATOR_BONUS = 5;
 
     const wchar_t patternLowerChar = std::towlower(patternChar);
     const wchar_t targetLowerChar = std::towlower(target[targetIndex]);
@@ -153,6 +153,9 @@ int FuzzyMatcher::CalculateScore(wchar_t patternChar, const std::wstring_view &t
     }
     else {
         switch (target[targetIndex - 1]) {
+        case '\\':
+            score += DIRECTORY_SEPARATOR_BONUS;
+            break;
         case ' ':
         case '_':
             score += SEPARATOR_BONUS;
