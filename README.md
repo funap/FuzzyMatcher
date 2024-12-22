@@ -56,6 +56,27 @@ A higher score indicates a better match quality.
 - C++17 or later
 - Compiler with wide string support
 
+## Test
+
+To run the tests, follow these steps:
+
+1. Create a build directory:
+```bash
+mkdir build
+cd build
+```
+
+2. Run CMake to build the project:
+```bash
+cmake ..
+cmake --build .
+```
+
+3. Run the tests:
+```bash
+ctest
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
